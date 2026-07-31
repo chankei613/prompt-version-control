@@ -1,0 +1,9 @@
+*.db
+*.db-shm
+*.db-wal
+.DS_Store
+/prompt-version-control
+/prompt-version-control.exe
+build/bin/
+frontend/dist/
+frontend/node_modules/
