@@ -7,13 +7,17 @@ systemプロンプト・worker定義ファイルの変更履歴を管理し、�
 
 詳細は [docs/spec.md](docs/spec.md) を参照。
 
-## 現在のステータス: Phase 1-2（CRUD/diff/rollback + 品質スコア）完了
+## 現在のステータス: v0.1.0 リリース済み
 
 - [x] Phase 0: プロジェクト立ち上げ
 - [x] Phase 1: データモデル・CRUD API・diff・rollback
 - [x] Phase 2: 品質スコア・集計
-- [ ] Phase 3: Wails + Vue3 UI
-- [ ] Phase 4: 仕上げ・署名・配布・LP
+- [x] Phase 3: Wails + Vue3 UI
+- [x] Phase 4: 仕上げ・署名・配布・LP
+
+macOSアプリ（署名・公証済み）は [GitHub Releases](https://github.com/chankei613/prompt-version-control/releases) から、
+ランディングページは https://prompt-version-control-nine.vercel.app/ から入手できる。
+アプリ内のHelpタブに使い方の説明がある。
 
 ## 使い方（開発用ヘッドレスサーバー）
 
