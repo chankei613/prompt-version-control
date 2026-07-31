@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1B1530"/>
+      <stop offset="100%" stop-color="#0E0A1A"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="32" y="32" width="960" height="960" rx="220" fill="url(#bg)"/>
+  <rect x="32.5" y="32.5" width="959" height="959" rx="219.5" fill="none" stroke="#332A4A" stroke-width="1"/>
+
+  <!-- git-branch: メイン系統 + 派生ブランチのマージ -->
+  <g transform="translate(152,180) scale(30)" fill="none" stroke="#7c5cd4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="6" y1="3" x2="6" y2="15"/>
+    <circle cx="18" cy="6" r="3"/>
+    <circle cx="6" cy="18" r="3"/>
+    <path d="M18 9a9 9 0 0 1-9 9"/>
+  </g>
+</svg>

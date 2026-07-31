@@ -52,7 +52,7 @@ const navItems = [
         <div class="flex items-start justify-between">
           <div class="flex items-center gap-2">
             <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="#7c5cd4" stroke-width="1.75">
-              <line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>
+              <line x1="6" x2="6" y1="3" y2="15" /><circle cx="18" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><path d="M18 9a9 9 0 0 1-9 9" />
             </svg>
             <div>
               <h1 class="text-sm font-semibold tracking-tight text-foreground">Prompt Version Control</h1>
@@ -61,10 +61,12 @@ const navItems = [
           </div>
           <!-- 言語切替ボタン -->
           <button
-            @click="toggleLocale"
             style="-webkit-app-region: no-drag"
             class="text-xs text-gray-400 hover:text-gray-700 px-1.5 py-0.5 rounded border border-gray-200 hover:border-gray-400 transition-colors shrink-0 mt-0.5"
-          >{{ t('lang.toggle') }}</button>
+            @click="toggleLocale"
+          >
+            {{ t('lang.toggle') }}
+          </button>
         </div>
       </div>
 
@@ -87,12 +89,14 @@ const navItems = [
     <!-- Main content -->
     <main class="flex-1 overflow-auto bg-gray-50/50 flex flex-col">
       <!-- エラーバナー（バックグラウンド処理のエラー通知） -->
-      <div v-if="execError"
-        class="mx-4 mt-3 px-4 py-2.5 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center justify-between gap-3 shrink-0">
+      <div
+        v-if="execError"
+        class="mx-4 mt-3 px-4 py-2.5 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center justify-between gap-3 shrink-0"
+      >
         <span>{{ execError }}</span>
-        <button @click="execError = null" class="text-red-400 hover:text-red-600 shrink-0">
+        <button class="text-red-400 hover:text-red-600 shrink-0" @click="execError = null">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         </button>
       </div>

@@ -46,7 +46,7 @@ function fmt(v: any): string {
 
     <div v-if="store.error" class="text-sm border rounded px-3 py-2 border-red-300 text-red-600">
       {{ t('error.prefix') }}{{ store.error }}
-      <button @click="store.fetchPrompts" class="ml-2 underline">{{ t('error.retry') }}</button>
+      <button class="ml-2 underline" @click="store.fetchPrompts">{{ t('error.retry') }}</button>
     </div>
 
     <div class="border border-border rounded-lg p-4 space-y-3 max-w-lg">
@@ -60,9 +60,9 @@ function fmt(v: any): string {
         class="w-full text-sm border border-border rounded px-2 py-1.5 font-mono"
       />
       <button
-        @click="create"
         :disabled="creating || !key.trim() || !content.trim()"
         class="text-sm px-3 py-1.5 rounded bg-gray-900 text-white disabled:opacity-40"
+        @click="create"
       >
         {{ t('prompts.new.create') }}
       </button>
@@ -85,10 +85,10 @@ function fmt(v: any): string {
             {{ fmt(p.updated_at) }}
           </div>
         </div>
-        <button @click="open(p.id)" class="text-xs px-2 py-1 border border-border rounded hover:bg-gray-50">
+        <button class="text-xs px-2 py-1 border border-border rounded hover:bg-gray-50" @click="open(p.id)">
           {{ t('prompts.card.open') }}
         </button>
-        <button @click="remove(p.id)" class="text-xs text-red-600 hover:underline">{{ t('prompts.card.delete') }}</button>
+        <button class="text-xs text-red-600 hover:underline" @click="remove(p.id)">{{ t('prompts.card.delete') }}</button>
       </div>
     </div>
   </div>

@@ -44,7 +44,7 @@ function fmt(v: any): string {
 
     <div v-if="store.error" class="text-sm border rounded px-3 py-2 border-red-300 text-red-600">
       {{ t('error.prefix') }}{{ store.error }}
-      <button @click="store.load" class="ml-2 underline">{{ t('error.retry') }}</button>
+      <button class="ml-2 underline" @click="store.load">{{ t('error.retry') }}</button>
     </div>
 
     <section class="space-y-2">
@@ -52,7 +52,7 @@ function fmt(v: any): string {
       <p class="text-xs text-muted-foreground">{{ t('settings.api.desc') }}</p>
       <div class="flex items-center gap-2">
         <code class="flex-1 text-xs bg-gray-50 border border-border rounded px-2 py-1.5 truncate">{{ store.apiURL }}</code>
-        <button @click="copyURL" class="text-xs px-2 py-1.5 border border-border rounded hover:bg-gray-50">{{ t('settings.keys.copy') }}</button>
+        <button class="text-xs px-2 py-1.5 border border-border rounded hover:bg-gray-50" @click="copyURL">{{ t('settings.keys.copy') }}</button>
       </div>
     </section>
 
@@ -63,7 +63,7 @@ function fmt(v: any): string {
         <div class="text-xs font-medium">{{ t('settings.keys.issued') }}</div>
         <div class="flex items-center gap-2">
           <code class="flex-1 text-xs bg-white border border-border rounded px-2 py-1 truncate">{{ store.lastIssuedKey.apiKey }}</code>
-          <button @click="copyKey" class="text-xs px-2 py-1 border border-border rounded hover:bg-gray-50">
+          <button class="text-xs px-2 py-1 border border-border rounded hover:bg-gray-50" @click="copyKey">
             {{ copied ? '✓' : t('settings.keys.copy') }}
           </button>
         </div>
@@ -72,11 +72,11 @@ function fmt(v: any): string {
       <div class="flex gap-2">
         <input
           v-model="newKeyName"
-          @keyup.enter="issue"
           :placeholder="t('settings.keys.name')"
           class="flex-1 text-sm border border-border rounded px-2 py-1.5"
+          @keyup.enter="issue"
         />
-        <button @click="issue" class="text-sm px-3 py-1.5 rounded bg-gray-900 text-white">{{ t('settings.keys.issue') }}</button>
+        <button class="text-sm px-3 py-1.5 rounded bg-gray-900 text-white" @click="issue">{{ t('settings.keys.issue') }}</button>
       </div>
 
       <div v-if="store.loading" class="text-xs text-muted-foreground">{{ t('loading') }}</div>
@@ -92,14 +92,14 @@ function fmt(v: any): string {
             <div class="text-xs text-muted-foreground">{{ fmt(k.created_at) }}</div>
           </div>
           <span v-if="k.revoked_at" class="text-xs text-muted-foreground">{{ t('settings.keys.revoked') }}</span>
-          <button v-else @click="store.revoke(k.id)" class="text-xs text-red-600 hover:underline">{{ t('settings.keys.revoke') }}</button>
+          <button v-else class="text-xs text-red-600 hover:underline" @click="store.revoke(k.id)">{{ t('settings.keys.revoke') }}</button>
         </li>
       </ul>
     </section>
 
     <section class="pt-4 border-t border-border flex items-center justify-between">
       <span class="text-xs text-muted-foreground">{{ t('settings.version') }}: {{ store.appVersion }}</span>
-      <button @click="confirmQuit" class="text-xs px-3 py-1.5 border border-border rounded hover:bg-gray-50">{{ t('settings.quit') }}</button>
+      <button class="text-xs px-3 py-1.5 border border-border rounded hover:bg-gray-50" @click="confirmQuit">{{ t('settings.quit') }}</button>
     </section>
   </div>
 </template>

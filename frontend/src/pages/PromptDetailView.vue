@@ -67,13 +67,13 @@ function qualityFor(versionId: string) {
 
 <template>
   <div class="p-6 space-y-6 overflow-y-auto h-full">
-    <button @click="router.push('/prompts')" class="text-xs text-muted-foreground hover:underline">
+    <button class="text-xs text-muted-foreground hover:underline" @click="router.push('/prompts')">
       &larr; {{ t('detail.back') }}
     </button>
 
     <div v-if="store.detailError" class="text-sm border rounded px-3 py-2 border-red-300 text-red-600">
       {{ t('error.prefix') }}{{ store.detailError }}
-      <button @click="load" class="ml-2 underline">{{ t('error.retry') }}</button>
+      <button class="ml-2 underline" @click="load">{{ t('error.retry') }}</button>
     </div>
 
     <div v-if="store.detailLoading" class="text-sm text-muted-foreground">{{ t('loading') }}</div>
@@ -100,9 +100,9 @@ function qualityFor(versionId: string) {
           class="w-full text-sm border border-border rounded px-2 py-1.5"
         />
         <button
-          @click="saveVersion"
           :disabled="saving || !newContent.trim()"
           class="text-sm px-3 py-1.5 rounded bg-gray-900 text-white disabled:opacity-40"
+          @click="saveVersion"
         >
           {{ t('detail.newVersion.save') }}
         </button>
@@ -133,8 +133,8 @@ function qualityFor(versionId: string) {
             </div>
             <button
               v-if="v.id !== store.detailPrompt.current_version_id"
-              @click="rollbackTo(v.id)"
               class="text-xs px-2 py-1 border border-border rounded hover:bg-gray-50"
+              @click="rollbackTo(v.id)"
             >
               {{ t('detail.history.rollback') }}
             </button>
@@ -153,7 +153,7 @@ function qualityFor(versionId: string) {
             <option value="" disabled>{{ t('detail.diff.to') }}</option>
             <option v-for="v in store.versions" :key="v.id" :value="v.id">v{{ v.version_no }}</option>
           </select>
-          <button @click="runDiff" :disabled="!diffFrom || !diffTo" class="text-sm px-3 py-1.5 rounded bg-gray-900 text-white disabled:opacity-40">
+          <button :disabled="!diffFrom || !diffTo" class="text-sm px-3 py-1.5 rounded bg-gray-900 text-white disabled:opacity-40" @click="runDiff">
             {{ t('detail.diff.title') }}
           </button>
         </div>
