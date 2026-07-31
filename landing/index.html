@@ -1,0 +1,787 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prompt Version Control — プロンプトの変更履歴を、消さずに管理する</title>
+    <meta
+      name="description"
+      content="プロンプトやworker定義の全編集履歴を保持し、ロールバックしても何も削除しないバージョン管理デスクトップアプリ。任意の2バージョンを差分比較でき、外部システムからの品質スコアでどの変更が効いたかも一目で分かる。macOS向け・無料・署名/公証済み。"
+    />
+    <meta property="og:title" content="Prompt Version Control — プロンプトの変更履歴を、消さずに管理する" />
+    <meta
+      property="og:description"
+      content="追記専用の履歴・ポインタ移動だけのロールバック・行単位の差分比較・バージョンごとの品質推移。macOS向け・無料。"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://prompt-version-control-nine.vercel.app/og-image.png" />
+    <meta property="og:url" content="https://prompt-version-control-nine.vercel.app/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://prompt-version-control-nine.vercel.app/og-image.png" />
+    <link rel="icon" href="./icon.png" />
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-MY1QL5CEZ2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || []
+      function gtag() {
+        dataLayer.push(arguments)
+      }
+      gtag('js', new Date())
+      gtag('config', 'G-MY1QL5CEZ2')
+    </script>
+
+    <style>
+      :root {
+        --bg: #0e0a1a;
+        --panel: #17111f;
+        --panel-2: #1c1526;
+        --line: #332a4a;
+        --text: #e8ecf3;
+        --muted: #a89bc7;
+        --accent: #7c5cd4;
+        --accent-ink: #ffffff;
+        --add: #0ca30c;
+        --remove: #d03b3b;
+        color-scheme: dark;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, -apple-system, 'Hiragino Sans', sans-serif;
+        line-height: 1.8;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .wrap {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      a {
+        color: var(--accent);
+      }
+
+      code {
+        background: var(--panel-2);
+        border-radius: 4px;
+        padding: 1px 6px;
+        font-size: 0.9em;
+      }
+
+      nav {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: rgba(14, 10, 26, 0.9);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .nav-inner {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 20px;
+        max-width: 980px;
+        margin: 0 auto;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+      }
+
+      .brand img {
+        width: 28px;
+        height: 28px;
+        border-radius: 7px;
+      }
+
+      .nav-spacer {
+        flex: 1;
+      }
+
+      .lang {
+        background: none;
+        border: 1px solid var(--line);
+        color: var(--muted);
+        border-radius: 999px;
+        padding: 4px 12px;
+        font: inherit;
+        font-size: 13px;
+        cursor: pointer;
+      }
+
+      .lang:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      .btn {
+        display: inline-block;
+        background: var(--accent);
+        color: var(--accent-ink);
+        border: 1px solid var(--accent);
+        border-radius: 8px;
+        padding: 9px 18px;
+        font-weight: 700;
+        text-decoration: none;
+        font-size: 14px;
+        transition: opacity 0.15s;
+      }
+
+      .btn:hover {
+        opacity: 0.85;
+      }
+
+      .btn.ghost {
+        background: none;
+        color: var(--text);
+        border-color: var(--line);
+        font-weight: 500;
+      }
+
+      .btn.ghost:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        opacity: 1;
+      }
+
+      .btn.small {
+        padding: 6px 14px;
+        font-size: 13px;
+      }
+
+      header.hero {
+        padding: 72px 0 40px;
+        text-align: center;
+      }
+
+      .badge {
+        display: inline-block;
+        border: 1px solid var(--line);
+        color: var(--muted);
+        border-radius: 999px;
+        padding: 3px 14px;
+        font-size: 13px;
+        margin-bottom: 22px;
+      }
+
+      h1 {
+        font-size: clamp(30px, 5.5vw, 46px);
+        line-height: 1.35;
+        margin: 0 0 18px;
+        letter-spacing: -0.01em;
+      }
+
+      h1 .hl {
+        color: var(--accent);
+      }
+
+      .sub {
+        color: var(--muted);
+        font-size: 17px;
+        max-width: 640px;
+        margin: 0 auto 30px;
+      }
+
+      .cta-row {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .cta-note {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 14px;
+      }
+
+      .shot {
+        margin: 46px 0 0;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--panel);
+        text-align: left;
+      }
+
+      .shot-cap {
+        color: var(--muted);
+        font-size: 13px;
+        text-align: center;
+        padding: 10px 16px;
+        border-top: 1px solid var(--line);
+      }
+
+      .mock-diff {
+        padding: 20px;
+      }
+
+      .mock-diff-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+
+      .mock-diff-head .v-badge {
+        font-size: 10px;
+        padding: 1px 8px;
+        border-radius: 999px;
+        background: var(--panel-2);
+        border: 1px solid var(--line);
+      }
+
+      .mock-diff-head .v-badge.current {
+        background: var(--accent);
+        color: var(--accent-ink);
+        border-color: var(--accent);
+      }
+
+      .mock-code {
+        background: var(--panel-2);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px 0;
+        font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+        font-size: 13px;
+      }
+
+      .mock-line {
+        padding: 2px 16px;
+        white-space: pre;
+      }
+
+      .mock-line.add {
+        background: rgba(12, 163, 12, 0.14);
+        color: #7fd996;
+      }
+
+      .mock-line.remove {
+        background: rgba(208, 59, 59, 0.14);
+        color: #ef9a9a;
+      }
+
+      .mock-line.equal {
+        color: var(--muted);
+      }
+
+      .uses {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        margin: 46px 0;
+      }
+
+      .use {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 6px 16px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      section {
+        padding: 56px 0;
+        border-top: 1px solid var(--line);
+      }
+
+      h2 {
+        font-size: 25px;
+        margin: 0 0 10px;
+        text-align: center;
+      }
+
+      .lead {
+        color: var(--muted);
+        text-align: center;
+        margin: 0 auto 36px;
+        max-width: 640px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(268px, 1fr));
+        gap: 14px;
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 20px;
+      }
+
+      .card h3 {
+        margin: 0 0 8px;
+        font-size: 16px;
+      }
+
+      .card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .card .ico {
+        font-size: 20px;
+        display: block;
+        margin-bottom: 10px;
+      }
+
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 14px;
+      }
+
+      .step {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 20px;
+      }
+
+      .step-no {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--accent);
+        color: var(--accent-ink);
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 12px;
+      }
+
+      .step h3 {
+        margin: 0 0 6px;
+        font-size: 16px;
+      }
+
+      .step p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .flow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 32px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .flow span.node {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px 16px;
+        background: var(--panel);
+      }
+
+      .flow span.node.last {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      .safety {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--accent);
+        border-radius: 10px;
+        padding: 22px;
+      }
+
+      .safety ul {
+        margin: 12px 0 0;
+        padding-left: 20px;
+        color: var(--muted);
+      }
+
+      .safety li {
+        margin-bottom: 8px;
+      }
+
+      .download {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 44px 24px;
+        text-align: center;
+      }
+
+      .req {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 18px;
+      }
+
+      .note-box {
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 14px 18px;
+        margin: 26px auto 0;
+        max-width: 620px;
+        text-align: left;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .note-box strong {
+        color: var(--accent);
+      }
+
+      footer {
+        border-top: 1px solid var(--line);
+        padding: 28px 0 46px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      footer a {
+        margin: 0 8px;
+      }
+
+      @media (max-width: 640px) {
+        header.hero {
+          padding: 48px 0 30px;
+        }
+        section {
+          padding: 42px 0;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <nav>
+      <div class="nav-inner">
+        <span class="brand">
+          <img src="./icon.png" alt="" />
+          Prompt Version Control
+        </span>
+        <span class="nav-spacer"></span>
+        <button class="lang" id="lang-toggle" type="button">EN</button>
+        <a class="btn small" href="#download" data-i18n="nav.dl">ダウンロード</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <div class="wrap">
+        <span class="badge" data-i18n="hero.badge">macOS · 無料 · 署名/公証済み</span>
+        <h1>
+          <span data-i18n="hero.h1a">プロンプトの変更履歴を、</span
+          ><span class="hl" data-i18n="hero.h1b">消さずに管理する</span
+          ><span data-i18n="hero.h1c">。</span>
+        </h1>
+        <p class="sub" data-i18n="hero.sub">
+          プロンプトやworker定義を編集するたびに新しいバージョンとして保存。ロールバックは<code>ポインタ</code>を動かすだけで、履歴は一切消えません。
+        </p>
+        <div class="cta-row">
+          <a class="btn" href="#download" data-i18n="hero.cta1">無料でダウンロード</a>
+          <a class="btn ghost" href="#how" data-i18n="hero.cta2">使い方を見る</a>
+        </div>
+        <p class="cta-note" data-i18n="hero.note">
+          インストール不要・アカウント登録なし。ロールバックしても以前のバージョンは全て残ります。
+        </p>
+
+        <div class="shot">
+          <div class="mock-diff" aria-hidden="true">
+            <div class="mock-diff-head">
+              <span>daily-summary-prompt</span>
+              <span><span class="v-badge">v2</span> → <span class="v-badge current">v3 (現在)</span></span>
+            </div>
+            <div class="mock-code">
+              <div class="mock-line equal">  あなたは要約アシスタントです。</div>
+              <div class="mock-line remove">- 3行以内で要約してください。</div>
+              <div class="mock-line add">+ 5行以内で、箇条書きで要約してください。</div>
+              <div class="mock-line add">+ 数値や固有名詞は省略しないこと。</div>
+              <div class="mock-line equal">  出力は日本語のみとする。</div>
+            </div>
+          </div>
+          <p class="shot-cap" data-i18n="shot.cap">
+            差分比較 — 任意の2バージョン間で何が変わったかを行単位で確認できる
+          </p>
+        </div>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <div class="uses">
+        <span class="use" data-i18n="use.1">AIエージェントのプロンプトを日々調整している</span>
+        <span class="use" data-i18n="use.2">「前のバージョンの方が良かった」を何度も経験した</span>
+        <span class="use" data-i18n="use.3">どの変更で出力品質が落ちたか分からなくなる</span>
+        <span class="use" data-i18n="use.4">worker定義をチームで共有・追跡したい</span>
+      </div>
+    </div>
+
+    <section id="features">
+      <div class="wrap">
+        <h2 data-i18n="feat.h">できること</h2>
+        <p class="lead" data-i18n="feat.lead">「プロンプトの履歴管理」に集中したツールです。</p>
+
+        <div class="grid">
+          <div class="card">
+            <span class="ico">📜</span>
+            <h3 data-i18n="feat.1h">追記専用の履歴</h3>
+            <p data-i18n="feat.1p">
+              編集して保存するたびにバージョン1, 2, 3…と増えていきます。既存のバージョンが上書きされることはありません。
+            </p>
+          </div>
+          <div class="card">
+            <span class="ico">↩️</span>
+            <h3 data-i18n="feat.2h">ポインタ移動だけのロールバック</h3>
+            <p data-i18n="feat.2p">
+              ロールバックは「現在」がどのバージョンかを動かすだけ。過去のバージョンは削除されず、いつでも見返せます。
+            </p>
+          </div>
+          <div class="card">
+            <span class="ico">🔍</span>
+            <h3 data-i18n="feat.3h">行単位の差分比較</h3>
+            <p data-i18n="feat.3p">
+              任意の2バージョンを選んで、追加・削除された行を色分けして確認できます。
+            </p>
+          </div>
+          <div class="card">
+            <span class="ico">📈</span>
+            <h3 data-i18n="feat.4h">バージョンごとの品質推移</h3>
+            <p data-i18n="feat.4p">
+              外部システムがバージョンIDに紐づけて品質スコアをPOSTすれば、どの変更が効いたかが一目で分かります。
+            </p>
+          </div>
+          <div class="card">
+            <span class="ico">🔌</span>
+            <h3 data-i18n="feat.5h">任意のAIシステムから利用可</h3>
+            <p data-i18n="feat.5p">
+              comet-taskAI・ai-scheduler・独自スクリプト等、HTTPで読み書きできるものなら何からでも連携できます。
+            </p>
+          </div>
+          <div class="card">
+            <span class="ico">🔑</span>
+            <h3 data-i18n="feat.6h">APIキー認証</h3>
+            <p data-i18n="feat.6p">
+              外部システムからのアクセスはAPIキーで保護。キーはハッシュ化して保存され、発行時にのみ表示されます。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="how">
+      <div class="wrap">
+        <h2 data-i18n="how.h">使い方は3ステップ</h2>
+        <p class="lead" data-i18n="how.lead">起動してプロンプトを作るだけ。設定はそれだけです。</p>
+
+        <div class="steps">
+          <div class="step">
+            <span class="step-no">1</span>
+            <h3 data-i18n="how.1h">プロンプトを作成</h3>
+            <p data-i18n="how.1p">
+              Key・説明・初期内容を入力して作成。これがバージョン1として保存されます。
+            </p>
+          </div>
+          <div class="step">
+            <span class="step-no">2</span>
+            <h3 data-i18n="how.2h">編集して新バージョンを保存</h3>
+            <p data-i18n="how.2p">
+              内容を編集して保存すると新しいバージョンが作られます。以前のバージョンは残ったままです。
+            </p>
+          </div>
+          <div class="step">
+            <span class="step-no">3</span>
+            <h3 data-i18n="how.3h">比較・ロールバック</h3>
+            <p data-i18n="how.3p">
+              差分を確認し、品質が下がっていたら以前のバージョンへロールバックします。
+            </p>
+          </div>
+        </div>
+
+        <div class="flow">
+          <span class="node" data-i18n="flow.1">プロンプトを編集</span>
+          <span>→</span>
+          <span class="node" data-i18n="flow.2">新バージョンとして保存</span>
+          <span>→</span>
+          <span class="node" data-i18n="flow.3">外部システムが品質をPOST</span>
+          <span>→</span>
+          <span class="node last" data-i18n="flow.4">推移を確認・必要ならロールバック</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="safety">
+      <div class="wrap">
+        <h2 data-i18n="safe.h">履歴は絶対に消えない設計</h2>
+        <p class="lead" data-i18n="safe.lead">
+          ロールバックは「現在」のポインタを動かすだけ。どれだけ操作しても過去のバージョンは失われません。
+        </p>
+
+        <div class="safety">
+          <strong data-i18n="safe.title">Prompt Version Controlが保証すること</strong>
+          <ul>
+            <li data-i18n="safe.1">
+              <strong>削除されない履歴</strong> — バージョンは追記されるのみ。ロールバックや新規保存で過去のバージョンが消えることはありません。
+            </li>
+            <li data-i18n="safe.2">
+              <strong>ロールバックはポインタ操作のみ</strong> — 「現在」がどのバージョンかを切り替えるだけで、新しいバージョンも古いバージョンも削除も発生しません。
+            </li>
+            <li data-i18n="safe.3">
+              <strong>差分は正確に計算</strong> — LCSアルゴリズムによる行単位の差分で、追加・削除を正確に表示します。
+            </li>
+            <li data-i18n="safe.4">
+              <strong>APIキーは発行時のみ表示</strong> — 外部システムからの読み書きは認証必須。キーはハッシュ化して保存します。
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="download">
+      <div class="wrap">
+        <div class="download">
+          <h2 data-i18n="dl.h">ダウンロード</h2>
+          <p class="lead" data-i18n="dl.lead">
+            無料で使えます。気に入ったらコーヒーをおごってください。
+          </p>
+          <div class="cta-row">
+            <a class="btn" href="./prompt-version-control-macos-universal.zip" download data-i18n="dl.btn"
+              >macOS版をダウンロード（Apple Silicon / Intel）</a
+            >
+            <a class="btn ghost" href="https://buymeacoffee.com/cometlabo" target="_blank" rel="noopener" data-i18n="dl.coffee"
+              >☕ 開発を応援する</a
+            >
+          </div>
+          <p class="req" data-i18n="dl.req">macOS 11 以降 · Universal (Apple Silicon / Intel) · 署名/公証済み · 約10MB</p>
+
+          <div class="note-box">
+            <p style="margin: 0">
+              <strong data-i18n="dl.n1t">Windows版について：</strong>
+              <span data-i18n="dl.n1">
+                準備中です。ソースからのビルドは
+                <a href="https://github.com/chankei613/prompt-version-control" target="_blank" rel="noopener">GitHubリポジトリ</a>
+                を参照してください。
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="wrap">
+        <p data-i18n="foot.made">Made by comet — AIと働くための道具をつくっています</p>
+        <p>
+          <a href="https://buymeacoffee.com/cometlabo" target="_blank" rel="noopener">Buy me a coffee</a>
+          <a href="https://choco-chip.comet-cat.com/" target="_blank" rel="noopener">Portfolio</a>
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      const dict = {
+        en: {
+          'nav.dl': 'Download',
+          'hero.badge': 'macOS · Free · Signed & notarized',
+          'hero.h1a': 'Track every prompt edit ',
+          'hero.h1b': 'without ever losing history',
+          'hero.h1c': '.',
+          'hero.sub':
+            'Every edit to a prompt or worker definition is saved as a new version. Rolling back just moves a <code>pointer</code> — nothing is ever deleted.',
+          'hero.cta1': 'Download for free',
+          'hero.cta2': 'See how it works',
+          'hero.note': 'No installer, no account. Every version stays intact even after you roll back.',
+          'shot.cap': 'Compare — line-level differences between any two versions',
+          'use.1': 'Tuning AI agent prompts every day',
+          'use.2': '"The old version was actually better" — one too many times',
+          'use.3': "Can't tell which change made output quality drop",
+          'use.4': 'Want to track and share worker definitions across a team',
+          'feat.h': 'What it does',
+          'feat.lead': 'A tool focused on one thing: prompt history you can trust.',
+          'feat.1h': 'Append-only history',
+          'feat.1p': 'Every save creates version 1, 2, 3… Existing versions are never overwritten.',
+          'feat.2h': 'Rollback is just a pointer move',
+          'feat.2p': 'Rolling back only changes which version is "current" — past versions stay intact and browsable.',
+          'feat.3h': 'Line-level diff',
+          'feat.3p': 'Pick any two versions and see exactly which lines were added or removed.',
+          'feat.4h': 'Quality trend per version',
+          'feat.4p': 'If an external system POSTs a quality score tied to a version ID, you can see exactly which change helped or hurt.',
+          'feat.5h': 'Usable from any AI system',
+          'feat.5p': 'comet-taskAI, ai-scheduler, your own scripts — anything that can read/write over HTTP can integrate.',
+          'feat.6h': 'API key authentication',
+          'feat.6p': 'External access is protected by API keys, stored hashed and shown only once at issuance.',
+          'how.h': 'Three steps',
+          'how.lead': 'Launch the app and create a prompt. That\'s the whole setup.',
+          'how.1h': 'Create a prompt',
+          'how.1p': 'Give it a key, a description, and initial content — this becomes version 1.',
+          'how.2h': 'Edit and save a new version',
+          'how.2p': 'Editing and saving creates a new version. Every earlier version stays exactly as it was.',
+          'how.3h': 'Compare and roll back',
+          'how.3p': 'Check the diff, and roll back to an earlier version if quality dropped.',
+          'flow.1': 'Edit a prompt',
+          'flow.2': 'Save as a new version',
+          'flow.3': 'External system POSTs quality',
+          'flow.4': 'Review the trend, roll back if needed',
+          'safe.h': 'History that never disappears',
+          'safe.lead': 'Rollback only moves the "current" pointer — no matter what you do, past versions are never lost.',
+          'safe.title': 'What Prompt Version Control guarantees',
+          'safe.1': 'Nothing is ever deleted — versions are append-only; neither rollback nor a new save removes a past version.',
+          'safe.2': 'Rollback is pointer-only — it flips which version is "current"; it never creates or deletes a version.',
+          'safe.3': 'Diffs are computed precisely — an LCS-based line diff shows additions and removals accurately.',
+          'safe.4': 'API keys are shown once — external read/write requires auth, keys are stored hashed.',
+          'dl.h': 'Download',
+          'dl.lead': 'Free to use. Buy me a coffee if it helps.',
+          'dl.btn': 'Download for macOS (Apple Silicon / Intel)',
+          'dl.coffee': '☕ Support development',
+          'dl.req': 'macOS 11+ · Universal (Apple Silicon / Intel) · Signed & notarized · ~10MB',
+          'dl.n1t': 'About the Windows build:',
+          'dl.n1':
+            'Coming soon. In the meantime, see the <a href="https://github.com/chankei613/prompt-version-control" target="_blank" rel="noopener">GitHub repository</a> to build from source.',
+          'foot.made': 'Made by comet — building tools for working with AI',
+        },
+      }
+
+      const original = {}
+      document.querySelectorAll('[data-i18n]').forEach((el) => {
+        original[el.dataset.i18n] = el.innerHTML
+      })
+
+      function apply(lang) {
+        document.documentElement.lang = lang === 'en' ? 'en' : 'ja'
+        document.querySelectorAll('[data-i18n]').forEach((el) => {
+          const key = el.dataset.i18n
+          const text = lang === 'en' ? dict.en[key] : original[key]
+          if (text !== undefined) el.innerHTML = text
+        })
+        document.getElementById('lang-toggle').textContent = lang === 'en' ? '日本語' : 'EN'
+        localStorage.setItem('lp_lang', lang)
+      }
+
+      document.getElementById('lang-toggle').addEventListener('click', () => {
+        apply(localStorage.getItem('lp_lang') === 'en' ? 'ja' : 'en')
+      })
+
+      apply(localStorage.getItem('lp_lang') || 'ja')
+    </script>
+  </body>
+</html>
